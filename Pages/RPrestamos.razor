@@ -1,0 +1,146 @@
+﻿@page "/rprestamos"
+@using SegundoRegistroBlazor.Controller
+@using SegundoRegistroBlazor.Models
+<EditForm Model="prestamo" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <div class="container-fluid">
+        <div class="container">
+            <h3>Registro de Personas</h3>
+        </div>
+
+        <div class="form-group">
+            <div class="input-group">
+                <InputNumber @bind-Value="prestamo.PrestamoId" id="prestamoIdNumber" class="form-control" />
+                <label for="prestamoIdNumber">Persona Id</label>
+
+
+            </div>
+
+            <button type="button" class="btn btn-primary btn-sm" @onclick="Buscar">Buscar</button>
+        </div>
+
+
+        <div class="form-group">
+            <label for="prestamoFecha">Fecha del Prestamo</label>
+            <InputDate @bind-Value="prestamo.FechaPrestamo" class="form-control" id="prestamoFecha" />
+            <ValidationMessage For="@(() => prestamo.FechaPrestamo)" />
+        </div>
+
+        <div class="form-group">
+            <label for="clienteTelefono">Telefono</label>
+            <InputSelect @bind-Value="PersonaIndex" class="custom-select form-control" id="personaSelectGrid">
+                <option value="0">Seleccione una persona...</option>
+                @if (personas != null)
+                {
+                    @foreach (var persona in personas)
+                    {
+                        <option value="@persona.PersonaId">@persona.Nombres</option>
+                    }
+                }
+            </InputSelect>
+        </div>
+
+        <div class="form-group">
+            <label for="prestamoConcepto">Concepto</label>
+            <InputText @bind-Value="prestamo.Concepto" class="form-control" id="prestamoConcepto" />
+            <ValidationMessage For="@(() => prestamo.Concepto)" />
+        </div>
+
+        <div class="form-group">
+            <label for="prestamoMonto">Monto del Prestamo</label>
+            <InputNumber @bind-Value="prestamo.Monto" class="form-control" id="prestamoMonto" />
+            <ValidationMessage For="@(() => prestamo.Monto)" />
+        </div>
+
+        <div class="form-group">
+            <label for="prestamoBalance">Balance</label>
+            <InputNumber @bind-Value="prestamo.Balance" class="form-control" id="prestamoBalance" />
+            <ValidationMessage For="@(() => prestamo.Balance)" />
+        </div>
+
+
+        <div class="btn-group">
+            <div class="form-group text-center" display: inline-block>
+                <button type="button" class="btn btn-lg btn-primary" @onclick="Nuevo">Nuevo</button>
+                <button type="submit" class="btn btn-lg btn-success">Guardar</button>
+                <button type="button" class="btn btn-lg btn-danger" @onclick="Eliminar">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+@code {
+    [Parameter]
+    public int PrestamoId { get; set; }
+    public int PersonaIndex { get; set; }
+    public string Mensaje { get; set; } = string.Empty;
+
+    private Prestamos prestamo = new Prestamos();
+    List<Personas> personas = new List<Personas>();
+
+
+    private void Nuevo()
+    {
+        prestamo = new Prestamos();
+        PersonaIndex = 0;
+    }
+    private void Guardar()
+    {
+        bool paso;
+
+        prestamo.PersonaId = PersonaIndex;
+
+
+        if (PersonaIndex == 0)
+        {
+            Mensaje="Debes seleccionar una persona valida.";
+
+        }
+        else
+        {
+            paso = PrestamosController.Guardar(prestamo);
+
+            if (paso)
+            {
+                var personaTemp = PersonasController.Buscar(prestamo.PersonaId);
+                personaTemp.Balance += prestamo.Balance;
+                PersonasController.Modificar(personaTemp);
+                Nuevo();
+                Mensaje="Registro Guardado exitosamente.";
+            }
+            else
+                Mensaje="No fue posible Guardar este Registro.";
+        }
+
+
+
+    }
+    private void Buscar() {
+        var temporal = PrestamosController.Buscar(prestamo.PrestamoId);
+
+        if (temporal != null)
+        {
+            this.prestamo = temporal;
+            PersonaIndex = prestamo.PersonaId;
+            
+        }
+        else
+            Nuevo();
+    }
+    private void Eliminar()
+    {
+        var temporal = PrestamosController.Buscar(prestamo.PrestamoId);
+
+        if (temporal != null)
+        {
+            var personaTemp = PersonasController.Buscar(prestamo.PersonaId);
+            personaTemp.Balance -= prestamo.Balance;
+            PersonasController.Modificar(personaTemp);
+            PrestamosController.Eliminar(prestamo.PrestamoId);
+            Nuevo();
+            Mensaje = "Registro Eliminado exitosamente.";
+            return;
+        }
+        else
+            Nuevo();
+    }
+}

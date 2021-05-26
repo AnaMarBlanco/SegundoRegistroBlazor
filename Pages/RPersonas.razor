@@ -1,0 +1,122 @@
+﻿@page "/rpersonas"
+@using SegundoRegistroBlazor.Controller
+@using SegundoRegistroBlazor.Models
+
+<div class="container">
+    <h3>Registro de Personas</h3>
+</div>
+
+<EditForm Model="persona" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <div class="container-fluid">
+        
+
+        <div class="input-group">
+            <div class="form-group">
+                <label for="PersonaIdNumber">Persona Id</label>
+                <InputNumber id="PersonaIdNumber" @bind-Value="persona.PersonaId"  class="form-control" />
+            </div>
+            <button type="button" class="btn btn-primary" @onclick="Buscar">Buscar</button>
+        </div>
+
+
+        <div class="form-group">
+            <label for="PersonaNombreText">Nombres</label>
+            <InputText @bind-Value="persona.Nombres" class="form-control" id="PersonaNombreText" />
+            <ValidationMessage For="@(() => persona.Nombres)" />
+        </div>
+
+        <div class="form-group">
+            <label for="PersonaTelefono">Telefono</label>
+            <InputText @bind-Value="persona.Telefono" class="form-control" id="PersonaTelefono"  />
+
+            <ValidationMessage For="@(() => persona.Telefono)" />
+        </div>
+
+
+        <div class="form-group">
+            <label for="personaCedula">Cedula</label>
+            <InputText @bind-Value="persona.Cedula" class="form-control" id="personaCedula" />
+            <ValidationMessage For="@(() => persona.Cedula)" />
+        </div>
+
+
+        <div class="form-group">
+            <label for="personaDireccion">Direccion</label>
+            <InputText @bind-Value="persona.Direccion" class="form-control" id="personaDireccion" />
+            <ValidationMessage For="@(() => persona.Direccion)" />
+        </div>
+
+
+        <div class="form-group">
+            <label for="personaFechaNacimiento">Fecha de Nacimiento</label>
+            <InputDate id="personaFechaNacimiento" @bind-Value="persona.FechaNacimiento" class="form-control"  />
+            
+        </div>
+
+
+        <div class="form-group">
+            <label for="personaBalance">Balance</label>
+            <InputNumber @bind-Value="persona.Balance" class="form-control" id="personaBalance" readonly />
+
+        </div>
+
+
+        <div class="btn-group">
+            <div class="form-group text-center" display: inline-block>
+                <button type="button" class="btn btn-lg btn-primary" @onclick="Nuevo">Nuevo</button>
+                <button type="submit" class="btn btn-lg btn-success" >Guardar</button>
+                <button type="button" class="btn btn-lg btn-danger" @onclick="Eliminar" >Eliminar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+
+    private Personas persona = new Personas();
+    public string Mensaje { get; set; } = string.Empty;
+
+    private void Nuevo()
+    {
+        persona = new Personas();
+    }
+
+    private void Guardar()
+    {
+        bool paso;
+
+        paso = PersonasController.Guardar(persona);
+        if (paso)
+            Mensaje = "Guardado";
+        else
+            Mensaje = "Error";
+    }
+    private void Eliminar()
+    {
+        bool paso;
+        var temp = PersonasController.Buscar(persona.PersonaId);
+        if (temp == null)
+            Mensaje = "Persona No existe";
+        else
+        {
+            paso = PersonasController.Eliminar(temp.PersonaId);
+            if (paso)
+                Mensaje = "Eliminado";
+            else
+                Mensaje = "Error";
+
+        }
+    }
+    private void Buscar()
+    {
+        var temp = PersonasController.Buscar(persona.PersonaId);
+        if (temp == null)
+            Mensaje = "Persona No existe";
+        else
+        {
+            persona = temp;
+
+        }
+    }
+}
